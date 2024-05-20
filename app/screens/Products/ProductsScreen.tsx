@@ -8,7 +8,9 @@ import {
 } from 'react-native';
 import { useGetProducts } from '@hooks/useGetProducts';
 import { Product } from '@/types';
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { useGetCategories } from '@hooks/useGetCategories';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const formatNumber = (number: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -18,7 +20,10 @@ const formatNumber = (number: number) => {
 };
 
 const ProductsScreen = () => {
-    const { products } = useGetProducts();
+    const { products, filterProductsByCategory } = useGetProducts();
+    const { categories } = useGetCategories();
+    const [open, setOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
     if (!products || !products.length) {
         return (
@@ -30,6 +35,16 @@ const ProductsScreen = () => {
 
     return (
         <View style={styles.container}>
+            <DropDownPicker
+                searchable
+                onSelectItem={filterProductsByCategory}
+                open={open}
+                setOpen={setOpen}
+                value={selectedCategory}
+                setValue={setSelectedCategory}
+                items={categories}
+                placeholder='Select a category'
+            />
             <FlatList
                 data={products}
                 keyExtractor={(item) => `${item.id}`}
@@ -89,7 +104,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     column: {
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        maxWidth: '50%',
         gap: 8,
     },
     row: {
