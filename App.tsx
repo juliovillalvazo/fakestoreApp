@@ -6,6 +6,7 @@ import ProductsScreen from '@screens/Products/ProductsScreen';
 import NewProductScreen from '@screens/Products/NewProductScreen';
 import { DetailsScreen } from '@screens/DetailsScreen';
 import { Ionicons } from '@expo/vector-icons';
+import { useDB } from './app/hooks/useDB';
 
 export type RootStackParamList = {
     products: undefined;
@@ -22,7 +23,7 @@ declare global {
 const StackNavigator = createNativeStackNavigator<RootStackParamList>();
 
 const RootStackNavigator = () => {
-    const { navigate } = useNavigation();
+    const { navigate, goBack } = useNavigation();
     return (
         <StackNavigator.Navigator>
             <StackNavigator.Screen
@@ -39,7 +40,26 @@ const RootStackNavigator = () => {
                     headerTitle: 'Products',
                 }}
             />
-            <StackNavigator.Screen name='details' component={DetailsScreen} />
+            <StackNavigator.Screen
+                name='details'
+                component={DetailsScreen}
+                options={({ route }) => ({
+                    headerRight: () => {
+                        const { id } = route.params;
+                        const { deleteProduct } = useDB();
+
+                        const handleRemove = () => {
+                            deleteProduct(id);
+                            goBack();
+                        };
+                        return (
+                            <TouchableOpacity onPress={handleRemove}>
+                                <Ionicons name='trash' size={24} />
+                            </TouchableOpacity>
+                        );
+                    },
+                })}
+            />
             <StackNavigator.Screen
                 name='modal'
                 component={NewProductScreen}
@@ -59,12 +79,3 @@ export default function App() {
         </NavigationContainer>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-});
